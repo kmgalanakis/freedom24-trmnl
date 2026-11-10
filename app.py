@@ -101,6 +101,7 @@ def summarize(raw):
         "day_change_pct": round(change / previous * 100, 2) if previous else 0.0,
         "currency": CURRENCY,
         "positions": len(positions),
+        "error": None,
     }
 
 
