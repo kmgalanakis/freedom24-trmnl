@@ -41,11 +41,18 @@ When something fails, the response has only `error` and `updated`.
 | Output | Source |
 | --- | --- |
 | Position value | `pos[].market_value`, or `pos[].q × pos[].mkt_price` when it is missing |
-| Yesterday's value | `pos[].q × pos[].close_price` |
+| Day change per position | `pos[].q × (pos[].mkt_price − pos[].close_price)` |
 | Cash | `acc[].s` |
-| Conversion to base currency | `currval` on each row |
+| Conversion to base currency | row `currval` ÷ `currval` of the `acc[]` row whose `curr` is `BASE_CURRENCY` |
 
-`total` is position values plus cash. `day_change` is `total` minus yesterday's value plus cash.
+`currval` is each currency's rate against one shared internal currency. It is not a rate to `BASE_CURRENCY`.
+For example, EUR may show 92.19 and USD 82.14, so 1 USD is 82.14 ÷ 92.19 = 0.891 EUR.
+If no `acc[]` row has `curr` equal to `BASE_CURRENCY`, `/portfolio` returns an error.
+
+`total` is position values plus cash. `day_change_pct` divides the change by yesterday's total, which is `total − day_change`.
+
+Cloudflare in front of the API rejects the default `Python-urllib` User-Agent with error 1010.
+The sidecar therefore sends its own User-Agent.
 
 ## Run
 

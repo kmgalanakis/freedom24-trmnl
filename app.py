@@ -40,6 +40,7 @@ def call(cmd, params=None):
         method="POST",
         headers={
             "Content-Type": "application/json",
+            "User-Agent": "freedom24-trmnl/1.0",  # Cloudflare blocks the default Python-urllib agent (error 1010)
             "X-NtApi-PublicKey": PUBLIC_KEY,
             "X-NtApi-Timestamp": timestamp,
             "X-NtApi-Sig": signature,
@@ -70,13 +71,27 @@ def fetch_raw():
 
 
 def summarize(raw):
-    """Total value and day change, converted with each row's currval rate."""
+    """Total value and day change in BASE_CURRENCY.
+
+    currval is each row's rate against one shared internal currency, not a
+    rate to BASE_CURRENCY. Dividing by the currval of the BASE_CURRENCY cash
+    row (acc[].curr) converts every row into BASE_CURRENCY.
+    """
     result = raw.get("result", raw) if isinstance(raw, dict) else {}
     portfolio = result.get("ps", result) if isinstance(result, dict) else {}
     positions = portfolio.get("pos") or []
     accounts = portfolio.get("acc") or []
 
-    total = previous = 0.0
+    base = next(
+        (num(a.get("currval")) for a in accounts if a.get("curr") == CURRENCY), None
+    )
+    if not base:
+        return {"error": f"no {CURRENCY} row in acc[] to convert with"}
+
+    def factor(row):
+        return (num(row.get("currval")) or base) / base
+
+    total = change = 0.0
     for p in positions:
         qty = num(p.get("q")) or 0.0
         price = num(p.get("mkt_price"))
@@ -86,14 +101,12 @@ def summarize(raw):
             value = qty * price
         if value is None:
             continue
-        rate = num(p.get("currval")) or 1.0
-        total += value * rate
-        previous += (qty * close if close else value) * rate
+        total += value * factor(p)
+        if price is not None and close:
+            change += qty * (price - close) * factor(p)
 
-    cash = sum((num(a.get("s")) or 0.0) * (num(a.get("currval")) or 1.0) for a in accounts)
-    total += cash
-    previous += cash
-    change = total - previous
+    total += sum((num(a.get("s")) or 0.0) * factor(a) for a in accounts)
+    previous = total - change
 
     return {
         "total": round(total, 2),
