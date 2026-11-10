@@ -25,7 +25,7 @@ The sidecar caches the answer for 5 minutes by default.
   "total": 12345.67,
   "day_change": 89.01,
   "day_change_pct": 0.73,
-  "currency": "EUR",
+  "currency": "USD",
   "positions": 7,
   "updated": "14:05",
   "error": null

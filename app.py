@@ -19,7 +19,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 PUBLIC_KEY = os.environ.get("F24_PUBLIC_KEY", "")
 PRIVATE_KEY = os.environ.get("F24_PRIVATE_KEY", "")
 API_URL = os.environ.get("F24_API_URL", "https://freedom24.com/api")
-CURRENCY = os.environ.get("BASE_CURRENCY", "EUR")
+CURRENCY = os.environ.get("BASE_CURRENCY", "USD")
 CACHE_SECONDS = int(os.environ.get("CACHE_SECONDS", "300"))
 DEBUG = os.environ.get("DEBUG", "0") == "1"
 PORT = int(os.environ.get("PORT", "8090"))
