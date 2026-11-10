@@ -1,0 +1,14 @@
+services:
+  freedom24:
+    image: python:3.12-alpine
+    container_name: freedom24-sidecar
+    restart: unless-stopped
+    working_dir: /app
+    command: ["python", "-u", "app.py"]
+    volumes:
+      - ./app.py:/app/app.py:ro
+    env_file: .env
+    environment:
+      TZ: Europe/Athens
+    ports:
+      - "8090:8090"   # LAN only: do not port-forward this on your router
