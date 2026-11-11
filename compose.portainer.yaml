@@ -1,0 +1,15 @@
+services:
+  freedom24:
+    build: .
+    image: freedom24-sidecar:latest
+    # Build the image from the repo on every deploy. The image is not on Docker Hub, so never pull it.
+    pull_policy: build
+    container_name: freedom24-sidecar
+    restart: unless-stopped
+    # Portainer writes the stack's environment variables to this file.
+    # Add F24_PUBLIC_KEY and F24_PRIVATE_KEY in the stack editor, never in git.
+    env_file: stack.env
+    environment:
+      TZ: Europe/Athens
+    ports:
+      - "8090:8090"   # LAN only: do not port-forward this on your router

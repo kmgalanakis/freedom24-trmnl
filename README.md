@@ -76,7 +76,31 @@ The Terminus instance at `http://192.168.1.152:2300` has the extension "Freedom2
 It polls `http://192.168.1.152:8090/portfolio` every 15 minutes.
 The sidecar must therefore run on the host `192.168.1.152`.
 
+## Setup with Portainer
+
+Use `compose.portainer.yaml` for Portainer. The regular `compose.yaml` does not work there.
+Portainer's copy of the repo has no `.env` file, and Portainer cannot bind-mount `./app.py` from it.
+
+The Portainer file builds a small image that contains `app.py`. It reads the keys from `stack.env`.
+Portainer creates `stack.env` from the environment variables you enter in the stack editor.
+
+1. In Portainer, open **Stacks**, then **Add stack**. Set **Name** to `freedom24-sidecar`, then choose **Repository**.
+2. Set **Repository URL** to `https://github.com/kmgalanakis/freedom24-trmnl`.
+   The repo is private, so turn on **Authentication** and enter a GitHub personal access token that can read it.
+3. Set **Repository reference** to `refs/heads/main` and **Compose path** to `compose.portainer.yaml`.
+4. Under **Environment variables**, add `F24_PUBLIC_KEY` and `F24_PRIVATE_KEY`.
+   Optionally add `BASE_CURRENCY`, `CACHE_SECONDS` and `DEBUG`. Keep `DEBUG=0` here.
+5. Optional: turn on **GitOps updates**. Portainer then redeploys the stack when you push to `main`.
+6. Click **Deploy the stack**.
+
+Check it from any machine on the LAN:
+
+```bash
+curl http://192.168.1.152:8090/portfolio
+```
+
 ## Security
 
-Do not forward port 8090 on your router. The keys can read your account.
-Keep `.env` out of git. The `.gitignore` file already excludes it.
+The Freedom24 API keys can place trades, not only read the account. Freedom24 documents no read-only keys.
+Do not forward port 8090 on your router.
+Keep `.env` and `stack.env` out of git. The `.gitignore` file already excludes both.
