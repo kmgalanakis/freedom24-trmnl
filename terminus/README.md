@@ -1,13 +1,12 @@
 # Terminus extension
 
 This folder holds the Terminus extension that turns the sidecar's JSON into a screen.
+Both files use the format that Terminus itself exports and imports.
 
 | File | Contents |
 | --- | --- |
-| `template.liquid` | The Liquid template. Paste it into the extension's **Template and Input** field. |
-| `extension.json` | The extension settings, the exchange (the URL Terminus polls), and the screen model the layout was made for. |
-
-The extension and the exchange are separate objects in Terminus. `extension.json` keeps them apart for that reason.
+| `configuration.yml` | The extension settings and its exchange, which is the URL Terminus polls. |
+| `template.html.liquid` | The Liquid template that renders the screen. |
 
 ## What the screen shows
 
@@ -23,23 +22,35 @@ If the sidecar returns an error, the screen shows the error text in place of the
 
 You need a running sidecar first. See the main [README](../README.md).
 
-1. In Terminus, open **Extensions** and create a new extension.
-2. Copy the values from the `extension` object in `extension.json`: label, name, description, kind **Poll**, mode **Text**, interval **15**, unit **Minute**.
-3. Under **Exchanges**, add an exchange with verb **GET** and the URL `http://SIDECAR_HOST:8090/portfolio`.
-   Replace `SIDECAR_HOST` with the LAN address of the machine that runs the sidecar.
-4. Paste `template.liquid` into **Template and Input**.
-5. Under **Build Matrix**, choose **Models** and select your device's model.
-6. Save the extension, then click **Build**. Terminus renders a screen for each selected model.
-7. Open your device's playlist and add the new screen.
+1. Zip the two files. The zip must hold them at its top level, not inside a folder:
+
+   ```bash
+   cd terminus && zip ../extension.zip configuration.yml template.html.liquid
+   ```
+
+2. In Terminus, open **Extensions**, click **Upload**, and attach `extension.zip`. Terminus creates the extension and its exchange.
+3. Open the new extension. Under **Exchanges**, open the exchange and replace `SIDECAR_HOST` with the LAN address of the machine that runs the sidecar.
+   Do not use `localhost`. Terminus runs in its own container, so `localhost` points at Terminus itself.
+4. Under **Build Matrix**, choose **Models** and select your device's model. The export format does not include this setting.
+5. Save the extension, then click **Build**. Terminus renders a screen for each selected model.
+6. Open your device's playlist and add the new screen.
 
 To check the data before you build, open the extension and look at **Data**. It should show the sidecar's JSON under `source_1`.
 
-Terminus also has an [Extensions API](https://github.com/usetrmnl/terminus/blob/main/doc/api.adoc#extensions) for scripted setup.
-The `extension` object in `extension.json` matches the API's request body, and the template goes in its `template` field.
+## Settings
+
+`configuration.yml` sets these values:
+
+| Setting | Value | Meaning |
+| --- | --- | --- |
+| `kind` | `poll` | Terminus fetches the exchange URL on a schedule. |
+| `interval`, `unit` | `15`, `minute` | Terminus polls every 15 minutes. |
+| `mode` | `text` | Terminus renders the template as text, not as dithered art. |
+| `exchanges[0].template` | `http://SIDECAR_HOST:8090/portfolio` | The sidecar's `/portfolio` endpoint. |
 
 ## Screen size
 
-The layout fits a model of 1072×1448 pixels with a scale factor of 1.6.
+The layout was made for the model "Amazon Kindle PW 7th Gen (Custom)": 1072×1448 pixels, scale factor 1.6, rotation 0, 8-bit grayscale.
 Terminus divides the size by the scale factor, so the template has about 670×905 CSS pixels to fill.
 
 For another model, compute the same CSS size and compare.
@@ -48,5 +59,16 @@ If the screen looks empty, raise them.
 
 ## Keep the copies in sync
 
-Terminus stores its own copy of the template.
-After you edit it in Terminus, copy it back into `template.liquid` and commit it.
+Terminus stores the live copy of the extension.
+When you change the extension in Terminus, click its **Download** link on the **Extensions** page and unzip the export over these two files.
+
+Before you commit, check two things:
+
+- The export holds your real sidecar address in the exchange `template`. Replace it with `SIDECAR_HOST`.
+- Terminus saves the template with Windows line endings. Convert them back to Unix line endings, so the diff shows only real changes:
+
+  ```bash
+  sed -i '' $'s/\r$//' template.html.liquid
+  ```
+
+  On Linux, drop the `''` after `-i`.

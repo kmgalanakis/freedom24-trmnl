@@ -1,0 +1,21 @@
+---
+version: 0.80.0
+name: freedom24_portfolio
+label: Freedom24 Portfolio
+description: Portfolio totals, P/L and holdings from the Freedom24 sidecar.
+mode: text
+kind: poll
+tags: []
+static_body:
+fields:
+data:
+interval: 15
+unit: minute
+days: []
+last_day_of_month: false
+start_at: '2026-11-09T00:00:00+00:00'
+exchanges:
+- headers:
+  verb: get
+  body:
+  template: http://SIDECAR_HOST:8090/portfolio
