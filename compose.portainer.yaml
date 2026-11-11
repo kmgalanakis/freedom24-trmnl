@@ -1,8 +1,8 @@
 services:
   freedom24:
     build: .
-    image: freedom24-sidecar:latest
-    # Build the image from the repo on every deploy. The image is not on Docker Hub, so never pull it.
+    # Build the image from the repo on every deploy. The service has no image name on purpose:
+    # with a name, Portainer's "Re-pull image" tries to pull it from Docker Hub and fails.
     pull_policy: build
     container_name: freedom24-sidecar
     restart: unless-stopped
