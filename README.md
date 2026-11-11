@@ -64,17 +64,39 @@ Put values right after `=`, without quotes.
 
 ## 3. Run the sidecar
 
-With Docker Compose:
+### With Docker Compose
+
+`compose.yaml` runs the stock `python:3.12-alpine` image and mounts `app.py` into it, so no build is needed.
+It reads your settings from `.env` and publishes port 8090.
+
+Run these commands from the repo folder. Start the sidecar in the background:
 
 ```bash
 docker compose up -d
 ```
 
+Check that it answers:
+
 ```bash
 curl http://localhost:8090/portfolio
 ```
 
-With the Docker CLI, build the image from the `Dockerfile` and start a container:
+Useful commands:
+
+| Task | Command |
+| --- | --- |
+| Show status | `docker compose ps` |
+| Show logs | `docker compose logs -f` |
+| Apply a changed `app.py`, for example after `git pull` | `docker compose restart` |
+| Apply a changed `.env` | `docker compose up -d --force-recreate` |
+| Stop and remove | `docker compose down` |
+
+`docker compose restart` does not reread `.env`. Compose reads it only when it creates the container, so use `--force-recreate` after you edit it.
+The sidecar logs almost nothing. When a request fails, the reason appears in the `error` field of `/portfolio`.
+
+### With the Docker CLI
+
+Build the image from the `Dockerfile` and start a container:
 
 ```bash
 docker build -t freedom24-sidecar .
@@ -115,7 +137,7 @@ Useful commands:
 `docker restart` does not reread `.env`. Docker reads `--env-file` only when it creates the container.
 Write values in `.env` without quotes, because `--env-file` keeps quotes as part of the value.
 
-Without Docker:
+### Without Docker
 
 ```bash
 set -a; . ./.env; set +a; python3 app.py
