@@ -216,6 +216,10 @@ Two details matter here:
 - **Keep `DEBUG=0`** except while debugging. `/raw` exposes the full Freedom24 response.
 - **Revoke leaked keys** on the [Freedom24 API key page](https://freedom24.com/tradernet-api/auth-api) right away.
 
+## License
+
+[MIT](LICENSE)
+
 ## Disclaimer
 
 This project is not affiliated with Freedom24, Freedom Finance, Tradernet or TRMNL.
