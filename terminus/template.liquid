@@ -1,36 +1,38 @@
 <div class="{{ extension.css_classes }}">
   <div class="view view--full">
     <style>
-      .pf { display: flex; flex-direction: column; gap: 28px; width: 100%; height: 100%; padding: 36px 44px 20px; box-sizing: border-box;
+      .pf { display: flex; flex-direction: column; gap: 16px; width: 100%; height: 100%; padding: 20px 40px 12px; box-sizing: border-box; overflow: hidden;
             font-family: var(--framework-typeface, "Inter Variable", "Inter", "Helvetica Neue", Arial, sans-serif); color: #000; }
-      .pf__label { font-size: 22px; font-weight: 700; letter-spacing: 4px; text-transform: uppercase; }
-      .pf__head { display: flex; justify-content: space-between; align-items: flex-end; gap: 24px; }
-      .pf__total { font-size: 104px; font-weight: 800; letter-spacing: -4px; line-height: 0.9; }
-      .pf__cur { font-size: 34px; font-weight: 700; letter-spacing: 0; margin-left: 10px; }
-      .pf__pills { display: flex; flex-direction: column; align-items: flex-end; gap: 12px; }
-      .pf__pill { display: inline-flex; gap: 10px; padding: 10px 20px; border: 3px solid #000; border-radius: 12px; font-size: 28px; font-weight: 800; white-space: nowrap; }
-      .pf__pill--down { background: #000; color: #fff; }
-      .pf__pill small { font-size: 18px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; align-self: center; }
-      .pf__stats { display: grid; grid-template-columns: repeat(4, 1fr); border: 3px solid #000; border-radius: 14px; }
-      .pf__stat { padding: 16px 18px; border-left: 2px solid #000; }
-      .pf__stat:first-child { border-left: 0; }
-      .pf__stat-k { font-size: 16px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; }
-      .pf__stat-v { font-size: 32px; font-weight: 800; margin-top: 6px; white-space: nowrap; }
-      .pf__alloc { display: flex; height: 26px; border: 3px solid #000; border-radius: 8px; overflow: hidden; }
-      .pf__alloc span { height: 100%; border-right: 2px solid #fff; }
+      .pf > * { flex-shrink: 0; min-width: 0; }
+      .pf__label { font-size: 20px; font-weight: 700; letter-spacing: 4px; text-transform: uppercase; }
+      .pf__total { font-size: 76px; font-weight: 800; letter-spacing: -4px; line-height: 0.95; }
+      .pf__cur { font-size: 32px; font-weight: 700; letter-spacing: 0; margin-left: 10px; }
+      .pf__stats { display: grid; grid-template-columns: repeat(3, 1fr); border: 3px solid #000; border-radius: 14px; overflow: hidden; }
+      .pf__stat { padding: 9px 16px; border-left: 2px solid #000; min-width: 0; }
+      .pf__stat:nth-child(3n+1) { border-left: 0; }
+      .pf__stat:nth-child(n+4) { border-top: 2px solid #000; }
+      .pf__stat--down { background: #000; color: #fff; }
+      .pf__stat-k { font-size: 15px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; }
+      .pf__stat-v { font-size: 25px; font-weight: 800; margin-top: 2px; white-space: nowrap; }
+      .pf__alloc { display: flex; height: 16px; border: 3px solid #000; border-radius: 8px; overflow: hidden; }
+      .pf__alloc span { flex-shrink: 0; height: 100%; box-shadow: inset -2px 0 0 #fff; }
       .pf__alloc span:nth-child(1) { background: #000; }
       .pf__alloc span:nth-child(2) { background: #555; }
       .pf__alloc span:nth-child(3) { background: #999; }
       .pf__alloc span:nth-child(n+4) { background: #ccc; }
-      .pf__table { width: 100%; border-collapse: collapse; }
-      .pf__table th { font-size: 16px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; text-align: right; padding: 0 0 10px; border-bottom: 3px solid #000; }
+      .pf__table { width: 100%; table-layout: fixed; border-collapse: collapse; }
+      .pf__table th { font-size: 14px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; text-align: right; padding: 0 0 8px 10px; border-bottom: 3px solid #000; }
+      .pf__table th:first-child, .pf__table td:first-child { padding-left: 0; }
       .pf__table th:first-child { text-align: left; }
-      .pf__table td { font-size: 26px; font-weight: 700; text-align: right; padding: 13px 0; border-bottom: 1px solid #000; white-space: nowrap; }
-      .pf__table td:first-child { text-align: left; white-space: normal; }
-      .pf__tk { font-size: 28px; font-weight: 800; }
-      .pf__nm { display: block; font-size: 17px; font-weight: 500; max-width: 330px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-      .pf__sub { font-size: 17px; font-weight: 500; display: block; }
-      .pf__neg { font-weight: 800; }
+      .pf__table td { font-size: 22px; font-weight: 700; text-align: right; padding: 9px 0 9px 10px; line-height: 1.15; border-bottom: 1px solid #000; white-space: nowrap; overflow: hidden; }
+      .pf__table td:first-child { text-align: left; }
+      .pf__table tr.pf__small td { font-size: 18px; padding-top: 5px; padding-bottom: 5px; }
+      .pf__table tr.pf__small .pf__tk { font-size: 19px; }
+      .pf__table col.c1 { width: 31%; } .pf__table col.c2 { width: 20%; } .pf__table col.c3 { width: 15%; } .pf__table col.c4 { width: 15%; } .pf__table col.c5 { width: 19%; }
+      .pf__tk { font-size: 24px; font-weight: 800; }
+      .pf__nm { display: block; font-size: 15px; font-weight: 500; overflow: hidden; text-overflow: ellipsis; padding-right: 12px; }
+      .pf__sub { font-size: 15px; font-weight: 500; display: block; }
+      .pf__neg { font-weight: 800; text-decoration: underline; }
       .pf__err { font-size: 26px; line-height: 1.3; margin: auto; text-align: center; max-width: 80%; }
     </style>
     {%- assign d = source_1 -%}
@@ -38,25 +40,18 @@
       {%- if d.total -%}
         {%- if d.day_change < 0 -%}{%- assign ddir = "down" -%}{%- assign dsign = "" -%}{%- assign darrow = "▼" -%}{%- else -%}{%- assign ddir = "up" -%}{%- assign dsign = "+" -%}{%- assign darrow = "▲" -%}{%- endif -%}
         {%- if d.pl < 0 -%}{%- assign pdir = "down" -%}{%- assign psign = "" -%}{%- else -%}{%- assign pdir = "up" -%}{%- assign psign = "+" -%}{%- endif -%}
-        <div class="pf__head">
-          <div>
-            <div class="pf__label">Portfolio</div>
-            <div class="pf__total">{{ d.total | round | number_with_delimiter }}<span class="pf__cur">{{ d.currency }}</span></div>
-          </div>
-          <div class="pf__pills">
-            <div class="pf__pill pf__pill--{{ ddir }}"><small>Today</small>{{ darrow }} {{ dsign }}{{ d.day_change | round: 2 | number_with_delimiter }} · {{ dsign }}{{ d.day_change_pct }}%</div>
-            {%- if d.pl -%}
-            <div class="pf__pill pf__pill--{{ pdir }}"><small>Total</small>{{ psign }}{{ d.pl | round | number_with_delimiter }} · {{ psign }}{{ d.pl_pct }}%</div>
-            {%- endif -%}
-          </div>
+        <div>
+          <div class="pf__label">Portfolio</div>
+          <div class="pf__total">{{ d.total | round | number_with_delimiter }}<span class="pf__cur">{{ d.currency }}</span></div>
         </div>
-
         {%- if d.holdings -%}
         <div class="pf__stats">
-          <div class="pf__stat"><div class="pf__stat-k">Invested</div><div class="pf__stat-v">{{ d.invested | round | number_with_delimiter }}</div></div>
-          <div class="pf__stat"><div class="pf__stat-k">Cost basis</div><div class="pf__stat-v">{{ d.cost | round | number_with_delimiter }}</div></div>
+          <div class="pf__stat pf__stat--{{ ddir }}"><div class="pf__stat-k">Today</div><div class="pf__stat-v">{{ darrow }} {{ dsign }}{{ d.day_change | round: 2 | number_with_delimiter }}</div><div class="pf__sub">{{ dsign }}{{ d.day_change_pct }}%</div></div>
+          <div class="pf__stat pf__stat--{{ pdir }}"><div class="pf__stat-k">Total P/L</div><div class="pf__stat-v">{{ psign }}{{ d.pl | round | number_with_delimiter }}</div><div class="pf__sub">{{ psign }}{{ d.pl_pct }}%</div></div>
+          <div class="pf__stat"><div class="pf__stat-k">Invested</div><div class="pf__stat-v">{{ d.invested | round | number_with_delimiter }}</div><div class="pf__sub">{{ d.positions }} holdings</div></div>
+          <div class="pf__stat"><div class="pf__stat-k">Cost</div><div class="pf__stat-v">{{ d.cost | round | number_with_delimiter }}</div></div>
           <div class="pf__stat"><div class="pf__stat-k">Cash</div><div class="pf__stat-v">{{ d.cash | round | number_with_delimiter }}</div></div>
-          <div class="pf__stat"><div class="pf__stat-k">Holdings</div><div class="pf__stat-v">{{ d.positions }}</div></div>
+          {%- assign top = d.holdings | first -%}<div class="pf__stat"><div class="pf__stat-k">Largest</div><div class="pf__stat-v">{{ top.ticker | split: "." | first }}</div><div class="pf__sub">{{ top.weight | round: 1 }}% of total</div></div>
         </div>
 
         <div class="pf__alloc">
@@ -64,13 +59,15 @@
         </div>
 
         <table class="pf__table">
+          <colgroup><col class="c1"><col class="c2"><col class="c3"><col class="c4"><col class="c5"></colgroup>
           <thead>
-            <tr><th>Holding</th><th>Value</th><th>Weight</th><th>Today</th><th>Total P/L</th></tr>
+            <tr><th>Holding</th><th>Value</th><th>Weight</th><th>Today</th><th>P/L</th></tr>
           </thead>
           <tbody>
             {%- for h in d.holdings limit: 12 -%}
               {%- if h.day_change_pct < 0 -%}{%- assign hs = "" -%}{%- assign hc = "pf__neg" -%}{%- else -%}{%- assign hs = "+" -%}{%- assign hc = "" -%}{%- endif -%}
               {%- if h.pl < 0 -%}{%- assign ps = "" -%}{%- assign pc = "pf__neg" -%}{%- else -%}{%- assign ps = "+" -%}{%- assign pc = "" -%}{%- endif -%}
+              {%- if h.weight >= 1 -%}
               <tr>
                 <td><span class="pf__tk">{{ h.ticker | split: "." | first }}</span><span class="pf__nm">{{ h.name }}</span></td>
                 <td>{{ h.value | round | number_with_delimiter }}<span class="pf__sub">{{ h.qty | round }} × {{ h.price }}</span></td>
@@ -78,6 +75,15 @@
                 <td class="{{ hc }}">{{ hs }}{{ h.day_change_pct }}%<span class="pf__sub">{{ hs }}{{ h.day_change | round: 2 }}</span></td>
                 <td class="{{ pc }}">{{ ps }}{{ h.pl | round | number_with_delimiter }}<span class="pf__sub">{% if h.pl_pct %}{{ ps }}{{ h.pl_pct }}%{% else %}no cost{% endif %}</span></td>
               </tr>
+              {%- else -%}
+              <tr class="pf__small">
+                <td><span class="pf__tk">{{ h.ticker | split: "." | first }}</span> <span class="pf__sub" style="display: inline">{{ h.qty | round }} × {{ h.price }}</span></td>
+                <td>{{ h.value | round | number_with_delimiter }}</td>
+                <td>{{ h.weight | round: 1 }}%</td>
+                <td class="{{ hc }}">{{ hs }}{{ h.day_change_pct }}%</td>
+                <td class="{{ pc }}">{{ ps }}{{ h.pl | round | number_with_delimiter }}</td>
+              </tr>
+              {%- endif -%}
             {%- endfor -%}
           </tbody>
         </table>
