@@ -74,6 +74,47 @@ docker compose up -d
 curl http://localhost:8090/portfolio
 ```
 
+With the Docker CLI, build the image from the `Dockerfile` and start a container:
+
+```bash
+docker build -t freedom24-sidecar .
+```
+
+```bash
+docker run -d --name freedom24-sidecar --restart unless-stopped --env-file .env -p 8090:8090 freedom24-sidecar
+```
+
+```bash
+curl http://localhost:8090/portfolio
+```
+
+The image contains `app.py`, so rebuild it after every change:
+
+```bash
+git pull && docker build -t freedom24-sidecar . && docker rm -f freedom24-sidecar
+```
+
+Then run the same `docker run` command again.
+
+To skip the build, mount `app.py` into the stock Python image. Run this from the repo folder:
+
+```bash
+docker run -d --name freedom24-sidecar --restart unless-stopped --env-file .env -p 8090:8090 -v "$PWD/app.py:/app/app.py:ro" -w /app python:3.12-alpine python -u app.py
+```
+
+With the mount, `docker restart freedom24-sidecar` picks up changes to `app.py`.
+
+Useful commands:
+
+| Task | Command |
+| --- | --- |
+| Show logs | `docker logs freedom24-sidecar` |
+| Apply a changed `.env` | `docker rm -f freedom24-sidecar`, then run `docker run` again |
+| Stop and remove | `docker rm -f freedom24-sidecar` |
+
+`docker restart` does not reread `.env`. Docker reads `--env-file` only when it creates the container.
+Write values in `.env` without quotes, because `--env-file` keeps quotes as part of the value.
+
 Without Docker:
 
 ```bash
