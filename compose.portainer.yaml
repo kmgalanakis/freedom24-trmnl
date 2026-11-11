@@ -9,7 +9,5 @@ services:
     # Portainer writes the stack's environment variables to this file.
     # Add F24_PUBLIC_KEY and F24_PRIVATE_KEY in the stack editor, never in git.
     env_file: stack.env
-    environment:
-      TZ: Europe/Athens
     ports:
       - "8090:8090"   # LAN only: do not port-forward this on your router

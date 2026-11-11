@@ -8,7 +8,5 @@ services:
     volumes:
       - ./app.py:/app/app.py:ro
     env_file: .env
-    environment:
-      TZ: Europe/Athens
     ports:
       - "8090:8090"   # LAN only: do not port-forward this on your router

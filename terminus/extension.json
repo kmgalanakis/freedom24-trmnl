@@ -1,0 +1,30 @@
+{
+  "extension": {
+    "label": "Freedom24 Portfolio",
+    "name": "freedom24_portfolio",
+    "description": "Portfolio totals, P/L and holdings from the Freedom24 sidecar.",
+    "kind": "poll",
+    "mode": "text",
+    "tags": ["finance"],
+    "interval": 15,
+    "unit": "minute",
+    "days": [],
+    "last_day_of_month": false,
+    "start_at": "2026-01-01T00:00:00"
+  },
+  "exchange": {
+    "verb": "get",
+    "template": "http://SIDECAR_HOST:8090/portfolio",
+    "headers": {},
+    "body": ""
+  },
+  "model": {
+    "label": "Amazon Kindle PW 7th Gen (Custom)",
+    "width": 1072,
+    "height": 1448,
+    "scale_factor": 1.6,
+    "rotation": 0,
+    "bit_depth": 8,
+    "mime_type": "image/png"
+  }
+}

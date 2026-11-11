@@ -1,10 +1,11 @@
-"""Freedom24 portfolio summary for Terminus.
+"""Freedom24 portfolio summary for TRMNL Terminus.
 
-Signs a Tradernet API v3 request (getPositionJson) and serves a small JSON
-summary on the LAN: total value and day change. Standard library only.
+Signs a Tradernet API request (getPositionJson) and serves a JSON summary of
+the portfolio on the LAN: totals, profit or loss, and one row per holding.
+Standard library only.
 
 Endpoints
-  GET /portfolio  -> {"total", "day_change", "day_change_pct", "currency", "positions", "updated", "error"}
+  GET /portfolio  -> totals, P/L and holdings in BASE_CURRENCY (see README.md)
   GET /raw        -> the untouched Freedom24 response (only when DEBUG=1)
 """
 
