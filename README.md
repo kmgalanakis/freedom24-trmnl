@@ -63,16 +63,21 @@ When something fails, the response has only `error` and `updated`.
 
 | Output | Source |
 | --- | --- |
-| Position value | `pos[].market_value`, or `pos[].q × pos[].mkt_price` when it is missing |
+| Position value | `pos[].q × pos[].mkt_price`, or `pos[].market_value` when the price is missing |
 | Day change per position | `pos[].q × (pos[].mkt_price − pos[].close_price)` |
 | Cost basis per position | `pos[].s`, which is `q × price_a` |
 | Ticker and name | `pos[].i` and `pos[].name` |
 | Cash | `acc[].s` |
-| Conversion to base currency | row `currval` ÷ `currval` of the `acc[]` row whose `curr` is `BASE_CURRENCY` |
+| Conversion to base currency | none for rows already in `BASE_CURRENCY`; otherwise row `currval` ÷ the `BASE_CURRENCY` `currval` from the same list (`pos[]` or `acc[]`) |
 
 `currval` is each currency's rate against one shared internal currency. It is not a rate to `BASE_CURRENCY`.
 For example, EUR may show 92.19 and USD 82.14, so 1 USD is 82.14 ÷ 92.19 = 0.891 EUR.
+`pos[]` and `acc[]` carry different `currval` values for the same currency, for example 82.55 and 82.14 for USD.
+Mixing them inflated USD holdings by 0.5%, so each list uses its own rate.
 If no `acc[]` row has `curr` equal to `BASE_CURRENCY`, `/portfolio` returns an error.
+
+The value uses `q × mkt_price` because Freedom24 computes its own P/L (`profit_close`) from it.
+`pl` then matches `profit_close` for every holding with a cost basis.
 
 `total` is position values plus cash. `day_change_pct` divides the change by yesterday's total, which is `total − day_change`.
 

@@ -74,21 +74,28 @@ def summarize(raw):
     """Total value and day change in BASE_CURRENCY.
 
     currval is each row's rate against one shared internal currency, not a
-    rate to BASE_CURRENCY. Dividing by the currval of the BASE_CURRENCY cash
-    row (acc[].curr) converts every row into BASE_CURRENCY.
+    rate to BASE_CURRENCY. pos[] and acc[] carry different currval values for
+    the same currency, so each list is converted with its own BASE_CURRENCY
+    rate, and rows already in BASE_CURRENCY are never converted.
     """
     result = raw.get("result", raw) if isinstance(raw, dict) else {}
     portfolio = result.get("ps", result) if isinstance(result, dict) else {}
     positions = portfolio.get("pos") or []
     accounts = portfolio.get("acc") or []
 
-    base = next(
-        (num(a.get("currval")) for a in accounts if a.get("curr") == CURRENCY), None
-    )
-    if not base:
+    def base_rate(rows):
+        return next(
+            (num(r.get("currval")) for r in rows if r.get("curr") == CURRENCY), None
+        )
+
+    acc_base = base_rate(accounts)
+    pos_base = base_rate(positions) or acc_base
+    if not acc_base:
         return {"error": f"no {CURRENCY} row in acc[] to convert with"}
 
-    def factor(row):
+    def factor(row, base):
+        if row.get("curr") == CURRENCY:
+            return 1.0
         return (num(row.get("currval")) or base) / base
 
     def pct(part, whole):
@@ -100,12 +107,12 @@ def summarize(raw):
         qty = num(p.get("q")) or 0.0
         price = num(p.get("mkt_price"))
         close = num(p.get("close_price"))
-        value = num(p.get("market_value"))
-        if value is None and price is not None:
-            value = qty * price
+        # Freedom24 computes its own P/L (profit_close) from q × mkt_price, so the
+        # value uses it too. market_value is only a fallback; it differs slightly.
+        value = qty * price if price is not None else num(p.get("market_value"))
         if value is None:
             continue
-        f = factor(p)
+        f = factor(p, pos_base)
         # s is the position's cost basis (q × average price) in its own currency.
         row_cost = (num(p.get("s")) or 0.0) * f
         row_change = qty * (price - close) * f if price is not None and close else 0.0
@@ -126,7 +133,7 @@ def summarize(raw):
             "pl_pct": pct(value * f - row_cost, row_cost) if row_cost else None,
         })
 
-    cash = sum((num(a.get("s")) or 0.0) * factor(a) for a in accounts)
+    cash = sum((num(a.get("s")) or 0.0) * factor(a, acc_base) for a in accounts)
     total = invested + cash
     previous = total - change
     holdings.sort(key=lambda h: h["value"], reverse=True)
