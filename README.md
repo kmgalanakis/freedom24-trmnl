@@ -25,12 +25,35 @@ The sidecar caches the answer for 5 minutes by default.
   "total": 12345.67,
   "day_change": 89.01,
   "day_change_pct": 0.73,
+  "invested": 12200.00,
+  "cash": 145.67,
+  "cost": 10000.00,
+  "pl": 2200.00,
+  "pl_pct": 22.0,
   "currency": "USD",
   "positions": 7,
+  "holdings": [
+    {
+      "ticker": "VUAA.EU",
+      "name": "Vanguard S&P 500 UCITS ETF",
+      "qty": 50.0,
+      "price": 145.2,
+      "price_currency": "USD",
+      "value": 7260.00,
+      "weight": 58.81,
+      "day_change": 12.50,
+      "day_change_pct": 0.17,
+      "pl": 1540.00,
+      "pl_pct": 26.92
+    }
+  ],
   "updated": "14:05",
   "error": null
 }
 ```
+
+`holdings` is sorted by `value`, largest first. All money fields are in `currency`, except `price`, which is in `price_currency`.
+`pl` is unrealized profit or loss: market value minus cost basis. `pl_pct` is `null` when a holding has no cost basis, such as free promotional shares.
 
 When something fails, the response has only `error` and `updated`.
 
@@ -42,6 +65,8 @@ When something fails, the response has only `error` and `updated`.
 | --- | --- |
 | Position value | `pos[].market_value`, or `pos[].q × pos[].mkt_price` when it is missing |
 | Day change per position | `pos[].q × (pos[].mkt_price − pos[].close_price)` |
+| Cost basis per position | `pos[].s`, which is `q × price_a` |
+| Ticker and name | `pos[].i` and `pos[].name` |
 | Cash | `acc[].s` |
 | Conversion to base currency | row `currval` ÷ `currval` of the `acc[]` row whose `curr` is `BASE_CURRENCY` |
 

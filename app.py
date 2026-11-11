@@ -91,7 +91,11 @@ def summarize(raw):
     def factor(row):
         return (num(row.get("currval")) or base) / base
 
-    total = change = 0.0
+    def pct(part, whole):
+        return round(part / whole * 100, 2) if whole else 0.0
+
+    holdings = []
+    invested = cost = change = 0.0
     for p in positions:
         qty = num(p.get("q")) or 0.0
         price = num(p.get("mkt_price"))
@@ -101,19 +105,46 @@ def summarize(raw):
             value = qty * price
         if value is None:
             continue
-        total += value * factor(p)
-        if price is not None and close:
-            change += qty * (price - close) * factor(p)
+        f = factor(p)
+        # s is the position's cost basis (q × average price) in its own currency.
+        row_cost = (num(p.get("s")) or 0.0) * f
+        row_change = qty * (price - close) * f if price is not None and close else 0.0
+        invested += value * f
+        cost += row_cost
+        change += row_change
+        holdings.append({
+            "ticker": p.get("i") or "",
+            "name": p.get("name") or "",
+            "qty": qty,
+            "price": price,
+            "price_currency": p.get("curr") or "",
+            "value": round(value * f, 2),
+            "day_change": round(row_change, 2),
+            "day_change_pct": pct(price - close, close) if price is not None and close else 0.0,
+            "pl": round(value * f - row_cost, 2),
+            # None for positions with no cost basis, such as free promotional shares.
+            "pl_pct": pct(value * f - row_cost, row_cost) if row_cost else None,
+        })
 
-    total += sum((num(a.get("s")) or 0.0) * factor(a) for a in accounts)
+    cash = sum((num(a.get("s")) or 0.0) * factor(a) for a in accounts)
+    total = invested + cash
     previous = total - change
+    holdings.sort(key=lambda h: h["value"], reverse=True)
+    for h in holdings:
+        h["weight"] = pct(h["value"], total)
 
     return {
         "total": round(total, 2),
         "day_change": round(change, 2),
-        "day_change_pct": round(change / previous * 100, 2) if previous else 0.0,
+        "day_change_pct": pct(change, previous),
+        "invested": round(invested, 2),
+        "cash": round(cash, 2),
+        "cost": round(cost, 2),
+        "pl": round(invested - cost, 2),
+        "pl_pct": pct(invested - cost, cost),
         "currency": CURRENCY,
-        "positions": len(positions),
+        "positions": len(holdings),
+        "holdings": holdings,
         "error": None,
     }
 
