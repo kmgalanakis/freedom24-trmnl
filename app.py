@@ -5,7 +5,7 @@ the portfolio on the LAN: totals, profit or loss, and one row per holding.
 Standard library only.
 
 Endpoints
-  GET /portfolio  -> totals, P/L and holdings in BASE_CURRENCY (see README.md)
+  GET /portfolio  -> totals, P/L and holdings in BASE_CURRENCY, at live prices (see README.md)
   GET /raw        -> the untouched Freedom24 response (only when DEBUG=1)
 """
 
@@ -58,8 +58,25 @@ def num(value):
         return None
 
 
+def fetch_quotes(tickers):
+    """Return live quotes as {ticker: quote} from getStockQuotesJson.
+
+    getPositionJson is a snapshot that Freedom24 computes overnight, so its
+    prices do not move during trading hours. The quotes supply live prices.
+    """
+    if not tickers:
+        return {}
+    response = call("getStockQuotesJson", {"tickers": ",".join(tickers)})
+    rows = (response.get("result") or {}).get("q") or [] if isinstance(response, dict) else []
+    return {row.get("c"): row for row in rows if isinstance(row, dict) and row.get("c")}
+
+
 def fetch_raw():
-    """Return the latest getPositionJson response, cached for CACHE_SECONDS."""
+    """Return getPositionJson plus live quotes, cached for CACHE_SECONDS.
+
+    The quotes are stored in the response under the extra key "quotes".
+    If the quote call fails, "quotes" is empty and the snapshot prices are used.
+    """
     if time.time() - _cache["at"] < CACHE_SECONDS and (_cache["raw"] or _cache["error"]):
         return _cache["raw"], _cache["error"]
     try:
@@ -67,6 +84,12 @@ def fetch_raw():
         error = raw.get("errMsg") or raw.get("error") if isinstance(raw, dict) else None
     except Exception as exc:  # network, HTTP or JSON errors
         raw, error = None, f"{type(exc).__name__}: {exc}"
+    if isinstance(raw, dict) and not error:
+        positions = ((raw.get("result") or {}).get("ps") or {}).get("pos") or []
+        try:
+            raw["quotes"] = fetch_quotes([p.get("i") for p in positions if p.get("i")])
+        except Exception:  # keep the snapshot prices when quotes fail
+            raw["quotes"] = {}
     _cache.update(at=time.time(), raw=raw, error=error)
     return raw, error
 
@@ -102,13 +125,22 @@ def summarize(raw):
     def pct(part, whole):
         return round(part / whole * 100, 2) if whole else 0.0
 
+    quotes = raw.get("quotes") or {} if isinstance(raw, dict) else {}
+
     holdings = []
     invested = cost = change = 0.0
+    live = 0
     for p in positions:
         qty = num(p.get("q")) or 0.0
         price = num(p.get("mkt_price"))
         close = num(p.get("close_price"))
-        # Freedom24 computes its own P/L (profit_close) from q × mkt_price, so the
+        # Prefer the live quote: ltp is the last trade, ClosePrice the previous close.
+        quote = quotes.get(p.get("i")) or {}
+        if num(quote.get("ltp")):
+            price = num(quote.get("ltp"))
+            close = num(quote.get("ClosePrice")) or close
+            live += 1
+        # Freedom24 computes its own P/L (profit_close) from q × price, so the
         # value uses it too. market_value is only a fallback; it differs slightly.
         value = qty * price if price is not None else num(p.get("market_value"))
         if value is None:
@@ -152,6 +184,7 @@ def summarize(raw):
         "pl_pct": pct(invested - cost, cost),
         "currency": CURRENCY,
         "positions": len(holdings),
+        "live_prices": live,
         "holdings": holdings,
         "error": None,
     }

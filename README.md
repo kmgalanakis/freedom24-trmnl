@@ -186,6 +186,7 @@ The service has no image name on purpose. With a name, "Re-pull image" tries to 
   "pl_pct": 22.0,
   "currency": "USD",
   "positions": 1,
+  "live_prices": 1,
   "holdings": [
     {
       "ticker": "VUAA.EU",
@@ -215,7 +216,8 @@ These numbers are made up for the example.
 | `cash` | Cash in all currencies |
 | `cost` | Cost basis of all holdings |
 | `pl`, `pl_pct` | Unrealized profit or loss: `invested − cost` |
-| `day_change`, `day_change_pct` | Change since the previous close. The percentage is relative to `total − day_change` |
+| `day_change`, `day_change_pct` | Change since the previous close. The percentage is relative to `total − day_change`. Before a market opens, its holdings show the change of their last session |
+| `live_prices` | How many holdings use a live quote. `0` means the quote call failed and the overnight snapshot prices are in use |
 | `holdings` | One row per holding, largest `value` first |
 | `holdings[].weight` | Share of `total`, in percent |
 | `holdings[].pl_pct` | `null` when the holding has no cost basis, such as free promotional shares |
@@ -230,9 +232,16 @@ Returns the untouched Freedom24 response. It is off unless `DEBUG=1`, and it the
 
 ## How it works
 
-The sidecar sends `POST https://freedom24.com/api/getPositionJson`, signed as the [Freedom24 API docs](https://freedom24.com/tradernet-api/auth-api) describe:
+The sidecar makes two signed `POST` requests on each refresh:
 
-- The body is the compact JSON `{}`, sent with `Content-Type: application/json`.
+1. `getPositionJson` returns holdings, quantities, cost basis and cash. Freedom24 computes it overnight, so its prices do not move during trading hours.
+2. `getStockQuotesJson` with `{"tickers": "VUAA.EU,JPM.US,..."}` returns live prices for those holdings. The tickers must be separated by commas.
+
+If the quote request fails, the sidecar uses the snapshot prices from `getPositionJson`.
+
+Both requests are signed as the [Freedom24 API docs](https://freedom24.com/tradernet-api/auth-api) describe:
+
+- The body is compact JSON, for example `{}`, sent with `Content-Type: application/json`.
 - `X-NtApi-PublicKey` holds the public key.
 - `X-NtApi-Timestamp` holds the current Unix time in seconds.
 - `X-NtApi-Sig` is the hex HMAC-SHA256 of `body + timestamp`, keyed with the private key.
@@ -241,15 +250,17 @@ The sidecar sends `POST https://freedom24.com/api/getPositionJson`, signed as th
 
 | Output | Freedom24 source |
 | --- | --- |
-| Holding value | `pos[].q × pos[].mkt_price`, or `pos[].market_value` when the price is missing |
-| Day change | `pos[].q × (pos[].mkt_price − pos[].close_price)` |
+| Price | Quote `ltp` (last trade). Without a quote: `pos[].mkt_price` |
+| Previous close | Quote `ClosePrice`. Without a quote: `pos[].close_price` |
+| Holding value | `pos[].q × price`, or `pos[].market_value` when there is no price |
+| Day change | `pos[].q × (price − previous close)` |
 | Cost basis | `pos[].s`, which equals `q × price_a` |
 | Ticker and name | `pos[].i` and `pos[].name` |
 | Cash | `acc[].s`, one row per currency in `acc[].curr` |
 | Currency conversion | See below |
 
-The value uses `q × mkt_price` because Freedom24 computes its own profit (`profit_close`) the same way.
-`pl` therefore matches `profit_close` for every holding with a cost basis.
+The value uses `q × price` because Freedom24 computes its own profit (`profit_close`) the same way.
+With snapshot prices, `pl` matches `profit_close` exactly. With live prices, it follows the market as the Freedom24 website does.
 
 `currval` is each row's rate against one shared internal currency. It is not a rate to `BASE_CURRENCY`.
 For example, EUR may show 92.19 and USD 82.14, so 1 USD is 82.14 ÷ 92.19 = 0.891 EUR.
@@ -269,6 +280,7 @@ Two details matter here:
 | `no USD row in acc[] to convert with` | Your account has no cash row in `BASE_CURRENCY`. Choose a currency your account holds. |
 | Portainer: `pull access denied for ...` | The service in `compose.portainer.yaml` has an image name. Remove it, so Portainer builds the image and never pulls it. |
 | Numbers lag the Freedom24 website | The sidecar caches for `CACHE_SECONDS`, and Terminus polls every 15 minutes. Allow up to about 20 minutes. |
+| Prices stay frozen while markets are open | Check `live_prices` in `/portfolio`. If it is `0`, the quote request failed, and only the overnight snapshot is in use. |
 | Rows cut off on the screen | The device model's scale factor shrinks the space. See [terminus/README.md](terminus/README.md#screen-size). |
 
 ## Security
