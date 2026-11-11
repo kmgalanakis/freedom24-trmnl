@@ -28,7 +28,7 @@
       .pf__table td:first-child { text-align: left; }
       .pf__table tr.pf__small td { font-size: 18px; padding-top: 5px; padding-bottom: 5px; }
       .pf__table tr.pf__small .pf__tk { font-size: 19px; }
-      .pf__table col.c1 { width: 31%; } .pf__table col.c2 { width: 20%; } .pf__table col.c3 { width: 15%; } .pf__table col.c4 { width: 15%; } .pf__table col.c5 { width: 19%; }
+      .pf__table col.c1 { width: 28%; } .pf__table col.c2 { width: 19%; } .pf__table col.c3 { width: 15%; } .pf__table col.c4 { width: 18%; } .pf__table col.c5 { width: 20%; }
       .pf__tk { font-size: 24px; font-weight: 800; }
       .pf__nm { display: block; font-size: 15px; font-weight: 500; overflow: hidden; text-overflow: ellipsis; padding-right: 12px; }
       .pf__sub { font-size: 15px; font-weight: 500; display: block; }
@@ -72,7 +72,7 @@
                 <td><span class="pf__tk">{{ h.ticker | split: "." | first }}</span><span class="pf__nm">{{ h.name }}</span></td>
                 <td>{{ h.value | round | number_with_delimiter }}<span class="pf__sub">{{ h.qty | round }} × {{ h.price }}</span></td>
                 <td>{{ h.weight | round: 1 }}%</td>
-                <td class="{{ hc }}">{{ hs }}{{ h.day_change_pct }}%<span class="pf__sub">{{ hs }}{{ h.day_change | round: 2 }}</span></td>
+                <td class="{{ hc }}">{{ hs }}{{ h.day_change_pct }}%<span class="pf__sub">{{ hs }}{{ h.day_change | round: 2 | number_with_delimiter }}</span></td>
                 <td class="{{ pc }}">{{ ps }}{{ h.pl | round | number_with_delimiter }}<span class="pf__sub">{% if h.pl_pct %}{{ ps }}{{ h.pl_pct }}%{% else %}no cost{% endif %}</span></td>
               </tr>
               {%- else -%}
